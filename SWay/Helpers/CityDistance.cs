@@ -9,12 +9,12 @@ namespace SWay.Helpers
 {
     public class CityDistance : NodeEvaluator2
     {
-        public CityDistance(int[,] distanceMatrix, List<string> cityName)
+        public CityDistance(long[,] distanceMatrix, List<string> cityName)
         {
             this.Matrix = distanceMatrix;
             this.CityName = cityName.ToArray();
         }
-        private int[,] Matrix;
+        private long[,] Matrix;
         private string[] CityName;
        
         public override long Run(int from_node, int to_node)
