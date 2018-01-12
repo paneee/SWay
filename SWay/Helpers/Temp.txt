@@ -1,0 +1,17 @@
+﻿            //addresses.Add("34-620 Jodłownik, Jodłownik 44/7");
+            //addresses.Add("43-150 Bieruń, Homera 30/32");
+            //addresses.Add("Kraków, Bojki 24");
+            //addresses.Add("Wrocław, Sztabowa 10");
+            //addresses.Add("Kasina Wielka 421");
+            //addresses.Add("Poznań");
+            //addresses.Add("Warszawa");
+            //addresses.Add("Zabrze");
+            //addresses.Add("Limanowa");
+            //addresses.Add("Białystok");
+
+            //addresses.Add("Gliwice");
+            //addresses.Add("Sopot");
+            //addresses.Add("Gdynia");
+            //addresses.Add("Słupsk");
+            //addresses.Add("Szczecin");
+            //addresses.Add("Koszalin");

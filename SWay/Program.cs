@@ -1,4 +1,5 @@
 ﻿using Google.Maps;
+using Google.Maps.Direction;
 using Google.Maps.DistanceMatrix;
 using Google.OrTools.ConstraintSolver;
 using SWay.Helpers;
@@ -15,51 +16,42 @@ namespace SWay
     {
         static void Main(string[] args)
         {
-            List<string> addresses = new List<string>();
+            List<string> Addresses = new List<string>() { "New York", "Los Angeles", "Chicago", "Minneapolis",
+                                                            "Denver", "Dallas", "Seattle", "Boston", "San Francisco", "St.Louis",
+                                                            "Houston", "Phoenix", "Salt Lake City" };
 
-            addresses.Add("34-620 Jodłownik, Jodłownik 44/7");
-            addresses.Add("43-150 Bieruń, Homera 30/32");
-            addresses.Add("Kraków, Bojki 24");
-            addresses.Add("Wrocław, Sztabowa 10");
-            addresses.Add("Kasina Wielka 421");
-            addresses.Add("Poznań");
-            addresses.Add("Warszawa");
-            addresses.Add("Zabrze");
-            addresses.Add("Limanowa");
-
-            APIGoogle.Register("AIzaSyD-ZnOQcxjPG7KXOR9l5OYKPhyxuzQChCc");
+            APIGoogle.Register("AIzaSyCkYDMEPLWCFvq3Oi-LJyEsMuh_06Fk62g");
 
             List<LatLng> listLatLng = new List<LatLng>();
-            foreach (string item in addresses)
+            foreach (string item in Addresses)
             {
                 listLatLng.Add(APIGoogle.GetLatLng(item));
             }
 
-            DistanceMatrixRequest request = new DistanceMatrixRequest()
-            {
-                WaypointsOrigin = new List<Location>(listLatLng),
-                WaypointsDestination = new List<Location>(listLatLng),
-                Mode = TravelMode.driving,
-                Units = Units.metric
-            };
+            DirectionRequest directionRequest = new DirectionRequest();
+            DirectionService directionService = new DirectionService();
 
-            var response = new DistanceMatrixService().GetResponse(request);
+            long[,] CityDistanceMatrix = new long[Addresses.Count, Addresses.Count];
 
-            long[,] CityDistanceMatrix = new long[addresses.Count, addresses.Count];
-
-            for (int i = 0; i < response.Rows.Count(); i++)
+            for (int i = 0; i < Addresses.Count; i++)
             {
 
-                for (int j = 0; j < response.Rows[i].Elements.Count(); j++)
+                for (int j = 0; j < Addresses.Count; j++)
                 {
-                    CityDistanceMatrix[i, j] = response.Rows[i].Elements[j].distance.Value;
+                    directionRequest.Origin = Addresses[i];
+                    directionRequest.Sensor = false; 
+                    {
+                        directionRequest.Destination = Addresses[j];
+                        var ttt = directionService.GetResponse(directionRequest);
+                        CityDistanceMatrix[i, j] = directionService.GetResponse(directionRequest).Routes[0].Legs[0].Distance.Value / 1000;
+                    };
                 }
             }
 
             int NumRoutes = 1;    // The number of routes, which is 1 in the TSP.
                                   // Nodes are indexed from 0 to tsp_size - 1. The depot is the starting node of the route.
             int Depot = 0;
-            int TspSize = addresses.Count;
+            int TspSize = Addresses.Count;
 
             if (TspSize > 0)
             {
@@ -68,8 +60,12 @@ namespace SWay
 
                 RoutingSearchParameters search_parameters = RoutingModel.DefaultSearchParameters();
 
-                CityDistance dist_between_nodes = new CityDistance(CityDistanceMatrix, addresses);
-                routing.SetCost(dist_between_nodes);
+                CityDistance dist_between_nodes = new CityDistance(CityDistanceMatrix, Addresses);
+                routing.SetArcCostEvaluatorOfAllVehicles(dist_between_nodes);
+                //routing.SetCost(dist_between_nodes);
+
+                Demand demands_at_locations = new Demand(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+
 
                 search_parameters.FirstSolutionStrategy = FirstSolutionStrategy.Types.Value.PathCheapestArc;
                 Assignment solution = routing.SolveWithParameters(search_parameters);
@@ -78,7 +74,7 @@ namespace SWay
                 if (solution != null)
                 {
                     // Solution cost.
-                    Console.WriteLine("Cost = {0}", solution.ObjectiveValue() / 1000);
+                    Console.WriteLine("Suma [km]= {0}", solution.ObjectiveValue() / 1000);
                     // Inspect solution.
                     // Only one route here; otherwise iterate from 0 to routing.vehicles() - 1
                     int route_number = 0;
@@ -86,9 +82,9 @@ namespace SWay
                          !routing.IsEnd(node);
                          node = solution.Value(routing.NextVar(node)))
                     {
-                        Console.Write("{0} -> ", addresses[(int)node]);
+                        Console.Write("{0} \n", Addresses[(int)node]);
                     }
-                    Console.WriteLine(addresses[0]);
+                    Console.WriteLine(Addresses[0]);
                 }
             }
             Console.ReadKey();
